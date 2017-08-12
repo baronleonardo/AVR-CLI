@@ -14,6 +14,7 @@ void CLI_exec();
 int CLI_execCmd( char* cmd );
 
 /**************************** System commands ****************************/
+int set( char* cmd, char* args );
 int print( char* cmd, char* args );
 
 

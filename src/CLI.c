@@ -1,6 +1,7 @@
 #include "CLI.h"
 #include <string.h>
 #include "wserial.h"
+#include <stdbool.h>
 
 // 26 represents the 26 letters in the english alphabets
 #define ALPHA_LEN 26
@@ -30,6 +31,13 @@ static Command Commands[] = {
       delayMS,
       NULL },
 
+    { "set",
+      "Desc: create a variable and assign a value to it\n"
+      "Usage: set <variable> <value>\n"
+      "NOTE: variables are only one letter a, or b, or c, ...",
+      set,
+      NULL },
+
     { "print",
       "Desc: print a string or a variable content\n"
       "Usage: print <variable>|<string>",
@@ -38,9 +46,12 @@ static Command Commands[] = {
 };
 
 static int8_t CLI_cmdTree[ALPHA_LEN];
+static char __input[MAX_CMD_LEN];
 static char __cmd[MAX_CMD_LEN];
+static char __variables[ALPHA_LEN][MAX_VAR_LEN];
 
 static Command* __getCmd(char* cmd_name);
+static char* CLI_prepCmd(char* cmd);
 
 void CLI_init( uint32_t baudrate )
 {
@@ -77,26 +88,88 @@ void CLI_init( uint32_t baudrate )
 
 void CLI_exec()
 {
-    wSerial_println( "Welcome ...\n\n" );
+    char c;
+    uint8_t counter;
+    char* token;
+    char* delem;
+
+    wSerial_println( "~~~ Welcome ... ~~~\n\n" );
 
     while( true )
     {
-        wSerial_print("> ");
-        wSerial_mirrorReceivedDataUntil('\n', __cmd, MAX_CMD_LEN);
+        counter = 0;
 
-        CLI_execCmd( __cmd );
+        wSerial_print("> ");
+
+        while( counter < MAX_CMD_LEN - 1 )
+        {
+            c = wSerial_read();
+
+            if( c > 0 )
+            {
+                wSerial_printChar(c);
+
+                __input[counter++] = c;
+
+                if( c == '\n' ) break;
+            }
+        }
+
+        __input[counter] = '\0';
+
+        if( counter < MAX_CMD_LEN - 1)
+        {
+            delem = token = __input;
+
+            while( (delem = strchr(token, ';')) != NULL )
+            {
+                *delem = '\0';
+                CLI_execCmd( CLI_prepCmd( token ) );
+                token = delem + 1;
+            }
+
+            CLI_execCmd( CLI_prepCmd( token ) );
+        }
     }
 }
 
 int CLI_execCmd( char* cmd )
 {
-    char* args = cmd;
+    // wSerial_println(cmd);
+
+    char* cmd_name;
+    char* args;
     Command* cmd_obj;
+	char* var = NULL;
+	char* varValue;
 
-    cmd = strtok(args, " ");
-    args = strtok(NULL, "");
+    cmd_name = cmd;
+    args = strchr(cmd, ' ');
 
-    cmd_obj = __getCmd(cmd);
+    if( args == NULL ) return -1;
+
+    *args++ = '\0';
+
+    // cmd_name = strtok(cmd, " ");
+    // args = strtok(NULL, " ");
+
+	var = strchr( args, '$' );
+
+	if( var != NULL )
+	{
+		varValue = __variables[ ASCII_TO_INDEX(var[1]) ];
+		// clear the variable representation from cmd (like: $x)
+		var[0] = var[1] = ' ';
+		strncpy(var, varValue, strlen(varValue));
+	}
+
+    cmd_obj = __getCmd(cmd_name);
+
+    if( cmd_obj == NULL )
+    {
+        wSerial_println("Invalid command");
+        return -1;
+    }
 
     if( strstr(args, "-h") != NULL )
     {
@@ -131,7 +204,54 @@ Command* __getCmd(char* cmd_name)
     }
 }
 
+char* CLI_prepCmd( char* cmd )
+{
+    char* var;
+    uint8_t varLen;
+    char* preparedCmd = __cmd;
+
+    // get rid of spaces in the begining
+    while( *cmd == ' ' ) cmd++;
+
+    for( ; *cmd != '\0'; preparedCmd++, cmd++ )
+    {
+        if( *cmd == '$' )
+        {
+            var = __variables[ ASCII_TO_INDEX(*(cmd + 1)) ];
+            varLen = strlen(var);
+            strncpy( preparedCmd, var, varLen );
+
+            // move cmd to the first space after `var`
+            cmd = strchr( cmd, ' ' );
+        }
+
+        *preparedCmd = *cmd;
+    }
+
+    *preparedCmd = '\0';
+
+    return __cmd;
+}
+
 /**************************** System commands ****************************/
+// 26 available variables has 10 bytes value max
+
+int set( char* cmd, char* args )
+{
+    args = strtok(args, " \n\t\r");
+    int8_t var_index = ASCII_TO_INDEX(args[0]);
+
+    strncpy( __variables[ var_index ],
+             strtok(NULL, " \n\t\r"),
+             MAX_VAR_LEN - 1 );
+
+    // terminate the value in case the value entered is larger than 10 bytes
+    // in this case it will be terminated
+    __variables[ var_index ][ MAX_VAR_LEN - 1 ] = '\0';
+
+    return 0;
+}
+
 int print( char* cmd, char* args )
 {
     wSerial_print(args);
