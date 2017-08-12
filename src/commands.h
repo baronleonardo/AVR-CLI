@@ -9,6 +9,8 @@ extern "C" {
 
 int led( char* cmd, char* args );
 int delayMS( char* cmd, char* args );
+int read( char* cmd, char* args );
+int write( char* cmd, char* args );
 
 #ifdef __cplusplus
 }

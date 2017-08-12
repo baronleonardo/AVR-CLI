@@ -43,6 +43,22 @@ static Command Commands[] = {
       "Usage: print <variable>|<string>",
       print,
       NULL },
+
+    { "write",
+      "Desc: write analog/digital data to <pin>\n"
+      "      d -> digital, a -> analog\n"
+      "Usage: write d|a[0-99] <value>\n"
+      "Example: write d10 1",
+      write,
+      NULL },
+
+    { "read",
+      "Desc: read analog/digital data from <pin>\n"
+      "      d -> digital, a -> analog\n"
+      "Usage: read d|a[0-99]\n"
+      "Example: read d10",
+      read,
+      NULL },
 };
 
 static int8_t CLI_cmdTree[ALPHA_LEN];
