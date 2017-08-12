@@ -12,6 +12,7 @@ void wSerial_begin(size_t baudrate);
 size_t wSerial_println(char* data);
 size_t wSerial_print(char* data);
 size_t wSerial_printChar(char c);
+size_t wSerial_printInt(int num);
 int wSerial_available();
 int wSerial_availableForWrite();
 int wSerial_read();

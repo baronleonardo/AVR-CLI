@@ -20,6 +20,11 @@ extern "C" size_t wSerial_printChar(char c)
     return Serial.print(c);
 }
 
+extern "C" size_t wSerial_printInt(int num)
+{
+    return Serial.print(num);
+}
+
 extern "C" int wSerial_available()
 {
     return Serial.available();
