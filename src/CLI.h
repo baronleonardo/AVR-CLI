@@ -13,6 +13,10 @@ void CLI_init( uint32_t baudrate );
 void CLI_exec();
 int CLI_execCmd( char* cmd );
 
+/**************************** System commands ****************************/
+int print( char* cmd, char* args );
+
+
 #ifdef __cplusplus
 }
 #endif

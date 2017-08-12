@@ -5,6 +5,8 @@
 // 26 represents the 26 letters in the english alphabets
 #define ALPHA_LEN 26
 #define MAX_CMD_LEN 100
+#define MAX_VAR_LEN 10
+#define ASCII_TO_INDEX(ascii) (ascii - 'a')
 
 typedef int (*cmd_func_t)(char* cmd, char* args);
 
@@ -20,16 +22,19 @@ static Command Commands[] = {
       "Desc: control the red led state (ON/OFF) on pin 13\n"
       "Usage: led [-i] <ON|OFF>",
       led,
-      NULL
-    },
+      NULL },
 
-    {
-        "delay",
-        "Desc: delay for X milisecond\n"
-        "Usage: delay <milisecond>",
-        delayMS,
-        NULL
-    },
+    { "delay",
+      "Desc: delay for X milisecond\n"
+      "Usage: delay <milisecond>",
+      delayMS,
+      NULL },
+
+    { "print",
+      "Desc: print a string or a variable content\n"
+      "Usage: print <variable>|<string>",
+      print,
+      NULL },
 };
 
 static int8_t CLI_cmdTree[ALPHA_LEN];
@@ -105,6 +110,9 @@ int CLI_execCmd( char* cmd )
 
 Command* __getCmd(char* cmd_name)
 {
+    if( cmd_name[0] - 'a' < 0 )
+        return NULL;
+
     int8_t cmdIndex = CLI_cmdTree[cmd_name[0] - 'a'];
     Command* command_obj;
 
@@ -121,4 +129,12 @@ Command* __getCmd(char* cmd_name)
 
         return command_obj;
     }
+}
+
+/**************************** System commands ****************************/
+int print( char* cmd, char* args )
+{
+    wSerial_print(args);
+
+    return 0;
 }
