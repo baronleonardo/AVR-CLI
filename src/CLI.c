@@ -51,7 +51,7 @@ static char __cmd[MAX_CMD_LEN];
 static char __variables[ALPHA_LEN][MAX_VAR_LEN];
 
 static Command* __getCmd(char* cmd_name);
-static char* CLI_prepCmd(char* cmd);
+static char* CLI_prepCmd(char* cmd, char* preparedCmd);
 
 void CLI_init( uint32_t baudrate )
 {
@@ -124,11 +124,11 @@ void CLI_exec()
             while( (delem = strchr(token, ';')) != NULL )
             {
                 *delem = '\0';
-                CLI_execCmd( CLI_prepCmd( token ) );
+                CLI_execCmd( CLI_prepCmd( token, __cmd ) );
                 token = delem + 1;
             }
 
-            CLI_execCmd( CLI_prepCmd( token ) );
+            CLI_execCmd( CLI_prepCmd( token, __cmd ) );
         }
     }
 }
@@ -186,29 +186,32 @@ Command* __getCmd(char* cmd_name)
     if( cmd_name[0] - 'a' < 0 )
         return NULL;
 
-    int8_t cmdIndex = CLI_cmdTree[cmd_name[0] - 'a'];
+    int8_t innerCmd = CLI_cmdTree[cmd_name[0] - 'a'];
     Command* command_obj;
 
-    if( cmdIndex == -1 )
+    if( innerCmd == -1 )
         return NULL;
-    else if( strcmp(Commands[cmdIndex].cmd, cmd_name) == 0 )
-        return &Commands[cmdIndex];
-    else if( Commands[cmdIndex].next == NULL )
+    else if( strcmp(Commands[innerCmd].cmd, cmd_name) == 0 )
+        return &Commands[innerCmd];
+    else if( Commands[innerCmd].next == NULL )
         return NULL;
     else
     {
-        while( ((command_obj = Commands[cmdIndex].next) != NULL) &&
+        while( ((command_obj = Commands[innerCmd].next) != NULL) &&
                (strcmp(command_obj->cmd, cmd_name) == 0) );
 
         return command_obj;
     }
 }
 
-char* CLI_prepCmd( char* cmd )
+char* CLI_prepCmd( char* cmd, char* preparedCmd )
 {
     char* var;
     uint8_t varLen;
-    char* preparedCmd = __cmd;
+    char* __preparedCmd = preparedCmd;
+    char* innerCmdHead;
+    char* innerCmdTail;
+    int cmdReturnValue;
 
     // get rid of spaces in the begining
     while( *cmd == ' ' ) cmd++;
@@ -225,12 +228,28 @@ char* CLI_prepCmd( char* cmd )
             cmd = strchr( cmd, ' ' );
         }
 
+        else if( *cmd == '`' )
+        {
+            // get the beginnging and the ending of the inner cmd
+            innerCmdHead = cmd; 
+            innerCmdTail = strchr( innerCmdHead + 1, '`' );
+
+            *innerCmdTail = '\0';
+            cmdReturnValue = CLI_execCmd( CLI_prepCmd( innerCmdHead + 1, preparedCmd ) );
+            itoa( cmdReturnValue, preparedCmd , 10 );
+
+            // update cmd, preparedCmd
+            cmd  = innerCmdTail;
+            preparedCmd = strchr( preparedCmd, '\0' );
+            continue;
+        }
+
         *preparedCmd = *cmd;
     }
 
     *preparedCmd = '\0';
 
-    return __cmd;
+    return __preparedCmd;
 }
 
 /**************************** System commands ****************************/
