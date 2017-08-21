@@ -151,8 +151,6 @@ void CLI_exec()
 
 int CLI_execCmd( char* cmd )
 {
-    // wSerial_println(cmd);
-
     char* cmd_name;
     char* args;
     Command* cmd_obj;
@@ -162,12 +160,23 @@ int CLI_execCmd( char* cmd )
     cmd_name = cmd;
     args = strchr(cmd, ' ');
 
-    if( args == NULL ) return -1;
+    // wSerial_println(cmd);
 
-    *args++ = '\0';
+    if( args != NULL )
+        *args++ = '\0';
+    else
+    {
+        char* tmp = strchr(cmd, '\n');
+        *tmp = '\0';
+    }
 
-    // cmd_name = strtok(cmd, " ");
-    // args = strtok(NULL, " ");
+    cmd_obj = __getCmd(cmd_name);
+
+    if( cmd_obj == NULL )
+    {
+        wSerial_println("Invalid command");
+        return -1;
+    }
 
 	var = strchr( args, '$' );
 
@@ -178,14 +187,6 @@ int CLI_execCmd( char* cmd )
 		var[0] = var[1] = ' ';
 		strncpy(var, varValue, strlen(varValue));
 	}
-
-    cmd_obj = __getCmd(cmd_name);
-
-    if( cmd_obj == NULL )
-    {
-        wSerial_println("Invalid command");
-        return -1;
-    }
 
     if( strstr(args, "-h") != NULL )
     {
