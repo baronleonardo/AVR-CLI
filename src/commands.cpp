@@ -3,8 +3,6 @@
 
 #define RED_LED 13
 
-extern "C" {
-
 int led( char* cmd, char* args )
 {
     // get the first argument
@@ -89,6 +87,4 @@ int write( char* cmd, char* args )
     }
 
     return 0;
-}
-
 }
