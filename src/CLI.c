@@ -13,50 +13,50 @@ typedef int (*cmd_func_t)(char* cmd, char* args);
 
 typedef struct Command {
     char* cmd;
-    char* description;
+    // char* description;
     cmd_func_t cmd_func;
     struct Command* next;
 } Command;
 
 static Command Commands[] = {
     { "led",
-      "Desc: control the red led state (ON/OFF) on pin 13\n"
-      "Usage: led [-i] <ON|OFF>",
+      // "Desc: control the red led state (ON/OFF) on pin 13\n"
+      // "Usage: led [-i] <ON|OFF>",
       led,
       NULL },
 
     { "delay",
-      "Desc: delay for X milisecond\n"
-      "Usage: delay <milisecond>",
+      // "Desc: delay for X milisecond\n"
+      // "Usage: delay <milisecond>",
       delayMS,
       NULL },
 
     { "set",
-      "Desc: create a variable and assign a value to it\n"
-      "Usage: set <variable> <value>\n"
-      "NOTE: variables are only one letter a, or b, or c, ...",
+      // "Desc: create a variable and assign a value to it\n"
+      // "Usage: set <variable> <value>\n"
+      // "NOTE: variables are only one letter a, or b, or c, ...",
       set,
       NULL },
 
     { "print",
-      "Desc: print a string or a variable content\n"
-      "Usage: print <variable>|<string>",
+      // "Desc: print a string or a variable content\n"
+      // "Usage: print <variable>|<string>",
       print,
       NULL },
 
     { "write",
-      "Desc: write analog/digital data to <pin>\n"
-      "      d -> digital, a -> analog\n"
-      "Usage: write d|a[0-99] <value>\n"
-      "Example: write d10 1",
+      // "Desc: write analog/digital data to <pin>\n"
+      // "      d -> digital, a -> analog\n"
+      // "Usage: write d|a[0-99] <value>\n"
+      // "Example: write d10 1",
       write,
       NULL },
 
     { "read",
-      "Desc: read analog/digital data from <pin>\n"
-      "      d -> digital, a -> analog\n"
-      "Usage: read d|a[0-99]\n"
-      "Example: read d10",
+      // "Desc: read analog/digital data from <pin>\n"
+      // "      d -> digital, a -> analog\n"
+      // "Usage: read d|a[0-99]\n"
+      // "Example: read d10",
       read,
       NULL },
 };
@@ -188,11 +188,11 @@ int CLI_execCmd( char* cmd )
 		strncpy(var, varValue, strlen(varValue));
 	}
 
-    if( strstr(args, "-h") != NULL )
-    {
-        wSerial_println(cmd_obj->description);
-        return 0;
-    }
+//    if( strstr(args, "-h") != NULL )
+//    {
+//        wSerial_println(cmd_obj->description);
+//        return 0;
+//    }
 
     // find the cmd command func to execute it
     return cmd_obj->cmd_func(cmd, args);
