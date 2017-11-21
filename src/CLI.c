@@ -117,6 +117,7 @@ void CLI_exec()
 
         wSerial_print("> ");
 
+        // receiving cmd
         while( counter < MAX_CMD_LEN - 1 )
         {
             c = wSerial_read();
@@ -133,6 +134,7 @@ void CLI_exec()
 
         __input[counter] = '\0';
 
+        // processing cmd
         if( counter < MAX_CMD_LEN - 1)
         {
             delem = token = __input;
