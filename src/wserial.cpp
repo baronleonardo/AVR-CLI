@@ -5,12 +5,12 @@ extern "C" void wSerial_begin( size_t baudrate )
     Serial.begin(baudrate);
 }
 
-extern "C" size_t wSerial_println(char* data)
+extern "C" size_t wSerial_println(const char* data)
 {
     return Serial.println(data);
 }
 
-extern "C" size_t wSerial_print(char* data)
+extern "C" size_t wSerial_print(const char* data)
 {
     return Serial.print(data);
 }
