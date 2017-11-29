@@ -52,10 +52,18 @@ SOURCES += \
     src/main.cpp \
     src/CLI.c \
     src/led.cpp \
-    src/wserial.c
+    src/wserial.c \
+    src/__CLI.c \
+    src/CLI.c \
+    src/commands.cpp \
+    src/wserial.cpp
 
 HEADERS += \
     src/CLI.h \
     src/led.h \
-    src/wserial.h
+    src/wserial.h \
+    src/__CLI.h \
+    src/definitions.h \
+    src/commands.h \
+    src/commandsdb.h
 

@@ -1,12 +1,10 @@
 #include "Arduino.h"
-#include "CLI.h"
+#include "__CLI.h"
 
-void setup()
-{
-    CLI_init(9600);
+void setup() {
+    __CLI_init(BAUDRATE);
 }
 
-void loop()
-{
-    CLI_exec();
+void loop() {
+    __CLI_mainLoop();
 }
