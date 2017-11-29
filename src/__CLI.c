@@ -9,9 +9,6 @@ typedef struct Input {
     char data[CMD_MAX_LEN];
 } Input;
 static Input __input;
-// TODO: design new command system
-// static char __cmd[MAX_CMD_LEN];
-// static char __variables[ALPHA_LEN][MAX_VAR_LEN];
 
 static Command currentCmd;
 
@@ -23,8 +20,6 @@ static Command* __CLI_prepCmd( char* cmd, Command* preparedCmd );
 
 void __CLI_init( uint32_t baudrate )
 {
-    // TODO: need testing
-
     size_t cmds_len = __get_Commands_count();
     int8_t cmdTreeIndex;
     CommandNode* cmd;
@@ -209,22 +204,3 @@ Command* __CLI_prepCmd( char* cmd, Command* preparedCmd ) {
 
     return preparedCmd;
 }
-
-/**************************** System commands ****************************/
-// 26 available variables has 10 bytes value max
-
-//int set( char* cmd, char* args )
-//{
-//    args = strtok(args, " \n\t\r");
-//    int8_t var_index = ASCII_TO_INDEX(args[0]);
-
-//    strncpy( __variables[ var_index ],
-//             strtok(NULL, " \n\t\r"),
-//             MAX_VAR_LEN - 1 );
-
-//    // terminate the value in case the value entered is larger than 10 bytes
-//    // in this case it will be terminated
-//    __variables[ var_index ][ MAX_VAR_LEN - 1 ] = '\0';
-
-//    return 0;
-//}

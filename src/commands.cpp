@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "wserial.h"
+#include "CLI.h"
 
 #define RED_LED 13
 
@@ -109,13 +110,9 @@ int read( char* cmd_name, char** args, int8_t args_len )
 int write( char* cmd_name, char** args, int8_t args_len )
 {
     uint8_t pinNum;
-//    char *arg_pin;
-//    char *arg_value;
-   
-//    arg_pin = strtok(args, " \r\n\t");
+
     pinNum = atoi( &args[0][1] );
-//    arg_value = strtok(NULL, " \r\n\t");
-    
+
     // This is digital
     if( args[0][0] == 'd' ) {
         pinMode(pinNum, HIGH);
@@ -133,9 +130,18 @@ int print( char* cmd, char** args, int8_t args_len )
 {
     for(uint8_t iii = 0; iii < args_len; iii++) {
         wSerial_print( args[iii] );
+
         if( iii < args_len - 1 )
             wSerial_printChar(' ');
     }
+
+    return 0;
+}
+
+int set( char* cmd, char** args, int8_t args_len )
+{
+    if( !Var_setStr(args[0][0], args[1], strlen(args[1])) )
+        return -1;
 
     return 0;
 }

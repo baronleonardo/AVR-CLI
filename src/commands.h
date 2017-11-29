@@ -21,7 +21,7 @@ int led( char*, char**, int8_t );
 int delayMS( char*, char**, int8_t );
 int read( char*, char**, int8_t );
 int write( char*, char**, int8_t );
-//int set(char*, char**, int8_t);
+int set(char*, char**, int8_t);
 int print(char*, char**, int8_t);
 
 /* Private functions */
