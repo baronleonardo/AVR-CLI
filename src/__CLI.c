@@ -5,7 +5,7 @@
 
 static int8_t CLI_cmdTree[ALPHA_LEN];
 typedef struct Input {
-    bool hasMultipleCmd;
+    int8_t numberOfMultipleCmd;
     char data[CMD_MAX_LEN];
 } Input;
 static Input __input;
@@ -43,7 +43,7 @@ void __CLI_init( uint32_t baudrate )
         }
     }
 
-    __input.hasMultipleCmd = false;
+    __input.numberOfMultipleCmd = 0;
 
     currentCmd.param_len = 0;
 
@@ -65,10 +65,8 @@ void __CLI_mainLoop()
 
     while( true )
     {
-        cmd = &currentCmd;
-        currentCmd.param_len = 0;
         counter = 0;
-        __input.hasMultipleCmd = false;
+        __input.numberOfMultipleCmd = 0;
 
         wSerial_print("> ");
 
@@ -83,7 +81,7 @@ void __CLI_mainLoop()
 
                 __input.data[counter++] = c;
 
-                if( c == ';' ) __input.hasMultipleCmd = true;
+                if( c == ';' ) __input.numberOfMultipleCmd++;
 
                 else if( c == '\r' ) counter--;
                 else if( c == '\n') break;
@@ -99,27 +97,23 @@ void __CLI_mainLoop()
         delem = token = __input.data;
 
         // tokenize input to multiple cmds if input has `;`
-        if(__input.hasMultipleCmd) {
-            while( ( delem = strchr(token, ';') ) != NULL )
-            {
+        while( __input.numberOfMultipleCmd >= 0 ) {
+            cmd = &currentCmd;
+            currentCmd.param_len = 0;
+
+            delem = strchr(token, ';');
+            if(delem)
                 *delem = '\0';
 
-                cmd = __CLI_prepCmd( token, cmd );
-                if( cmd )
-                    __CLI_exec( cmd );
-                else
-                    wSerial_println("Invalid command");
+            cmd = __CLI_prepCmd( token, cmd );
+            if( cmd )
+                __CLI_exec( cmd );
+            else
+                wSerial_println("Invalid command");
 
-                token = delem + 1;
-            }
+            token = delem + 1;
+            __input.numberOfMultipleCmd--;
         }
-
-        cmd = __CLI_prepCmd( token, cmd );
-        if( cmd != NULL ) {
-            __CLI_exec( cmd );
-        }
-        else
-            wSerial_println("Invalid command");
     }
 }
 
