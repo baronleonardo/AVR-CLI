@@ -9,6 +9,20 @@ static char __variables[ALPHA_LEN][VAR_MAX_LEN];
 
 static bool __validVar( char var );
 
+bool Var_isVar( char* input ) {
+    if( input[0] == '$' )
+        return true;
+    else
+        return false;
+}
+
+char Var_getVarFromArg( char* input ) {
+    if( input[0] == '$' )
+        return input[1];
+    else
+        return 0;
+}
+
 int Var_getInt( char var ) {
     // TODO: we need better design for validating var
     if( !__validVar(var) ) return -1;

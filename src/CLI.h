@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+bool Var_isVar( char* input );
+char Var_getVarFromArg( char* input );
+
 int Var_getInt( char var );
 float Var_getFloat( char var );
 char Var_getChar( char var );

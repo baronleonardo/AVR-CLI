@@ -17,12 +17,12 @@ CommandNode Commands[] = {
       delayMS,
       NULL },
 
-//    { "set",
-//      // "Desc: create a variable and assign a value to it\n"
-//      // "Usage: set <variable> <value>\n"
-//      // "NOTE: variables are only one letter a, or b, or c, ...",
-//      set,
-//      NULL },
+    { "set",
+      // "Desc: create a variable and assign a value to it\n"
+      // "Usage: set <variable> <value>\n"
+      // "NOTE: variables are only one letter a, or b, or c, ...",
+      set,
+      NULL },
 
     { "print",
       // "Desc: print a string or a variable content\n"
@@ -55,14 +55,22 @@ size_t __get_Commands_count() {
 
 int led( char* cmd_name, char **args , int8_t args_len )
 {
-    // `-i` means initiate
-    if( strcmp(args[0], "-i") == 0 )
-        pinMode(RED_LED, OUTPUT);
+    uint8_t pinStateIndex = 0;
 
-    if( strcmp(args[1], "ON") == 0 )
+    // `-i` means initiate
+    if( args[0][0] == '-' ) {
+        pinStateIndex = 1;
+
+        if( args[0][1] == 'i' )
+            pinMode(RED_LED, OUTPUT);
+        else
+            return -1;
+    }
+
+    if( strcmp(args[pinStateIndex], "ON") == 0 )
         digitalWrite(RED_LED, HIGH);
 
-    else if( strcmp(args[1], "OFF") == 0 )
+    else if( strcmp(args[pinStateIndex], "OFF") == 0 )
         digitalWrite(RED_LED, LOW);
 
     else {
@@ -75,7 +83,13 @@ int led( char* cmd_name, char **args , int8_t args_len )
 
 int delayMS( char* cmd_name, char** args, int8_t args_len )
 {
-    int amount = atoi( args[0] );
+    int amount;
+
+    // check if there is any variable
+    if( !Var_isVar(args[0]) )
+        amount = atoi( args[0] );
+    else
+        amount = Var_getInt( Var_getVarFromArg(args[0]) );
 
     if( amount != -1 )
         delay( amount );
@@ -90,46 +104,78 @@ int delayMS( char* cmd_name, char** args, int8_t args_len )
 
 int read( char* cmd_name, char** args, int8_t args_len )
 {
+    // TODO: add args for initiate pin before read
     uint8_t pinNum;
+    uint8_t pinState;
+    uint8_t var;
+
+    // check if there is any variable
+    if( !Var_isVar(args[1]) )
+        return -1;
+    else
+        var = Var_getVarFromArg(args[1]);
    
     pinNum = atoi( &args[0][1] );
     
     // This is digital
-    if( args[0][0] == 'd' ) {
-        pinMode(pinNum, INPUT);
-        return digitalRead(pinNum);
-    }
+    if( args[0][0] == 'd' )
+        pinState = digitalRead(pinNum);
 
     // This is analog
     else if( args[0][0] == 'a' )
-        return analogRead(pinNum);
+        pinState = analogRead(pinNum);
 
-    return -1;
+    if( !Var_setInt(var, pinState) )
+        return -1;
+
+    return 0;
 }
 
 int write( char* cmd_name, char** args, int8_t args_len )
 {
+    // TODO: add args for initiate pin before write
     uint8_t pinNum;
+    uint8_t pinState;
+
+    // check if there is any variable
+    if( !Var_isVar(args[1]) )
+        pinState = atoi(args[1]);
+    else
+        pinState = Var_getInt( Var_getVarFromArg(args[1]) );
+
+    if( (pinState != 0) && (pinState != 1) )
+        return -1;
 
     pinNum = atoi( &args[0][1] );
 
     // This is digital
     if( args[0][0] == 'd' ) {
         pinMode(pinNum, HIGH);
-        digitalWrite( pinNum, atoi(args[1]) );
+        digitalWrite( pinNum, pinState );
     }
 
     // This is analog
     else if( args[0][0] == 'a' )
-        analogWrite( pinNum, atoi(args[1]) );
+        analogWrite( pinNum, pinState );
 
     return 0;
 }
 
 int print( char* cmd, char** args, int8_t args_len )
 {
+    const char* data;
+
     for(uint8_t iii = 0; iii < args_len; iii++) {
-        wSerial_print( args[iii] );
+        // check existance of variables
+        if( !Var_isVar(args[iii]) )
+            wSerial_print( args[iii] );
+        else {
+            if( (data = Var_getStr( Var_getVarFromArg(args[iii]) )) != NULL )
+                wSerial_print( data );
+
+            else
+                return -1;
+        }
 
         if( iii < args_len - 1 )
             wSerial_printChar(' ');
